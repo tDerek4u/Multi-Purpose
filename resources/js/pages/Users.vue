@@ -20,7 +20,7 @@
       <div class="card">
         <div class="card-body">
             <!-- Add user -->
-            <button type="button" class="mb-2 btn btn-primary" data-toggle="modal" data-target="#userFormModal">
+            <button type="button" @click="addUser" class="mb-2 btn btn-primary" data-toggle="modal" data-target="#userFormModal">
                 Add New User
             </button>
           <table class="table table-bordered">
@@ -41,7 +41,9 @@
                     <td>{{ user.email }}</td>
                     <td></td>
                     <td></td>
-                    <td></td>
+                    <td>
+                        <a href="#" @click.prevent="editUser(user)"><i class="fa fa-edit "></i></a>
+                    </td>
                 </tr>
             </tbody>
           </table>
@@ -63,8 +65,8 @@
       <div class="modal-content">
         <div class="modal-header">
           <h5 class="modal-title" id="staticBackdropLabel">
-            <span>Edit User</span> &nbsp;
-            <span>Add New User</span>
+            <span v-if="editing == true">Edit User</span> &nbsp;
+            <span v-else>Add New User</span>
           </h5>
           <button
             type="button"
@@ -75,7 +77,7 @@
             <span aria-hidden="true">&times;</span>
           </button>
         </div>
-        <Form @submit="createUser" :validation-schema="schema" v-slot="{ errors }">
+        <Form ref="form" @submit="createUser" :validation-schema="schema" v-slot="{ errors }" :value="formValues">
             <div class="modal-body">
                     <div class="form-group">
                         <label for="name">Name</label>
@@ -153,7 +155,13 @@ import * as yup from "yup";
 import Swal from "sweetalert2";
 
     const users = ref([]);
-  
+
+    const editing = ref(false);
+
+    const formValues = ref();
+
+    const form = ref(null);
+
     const getUsers = () => {
         axios.get('/api/users').then((response) => {
             users.value = response.data
@@ -161,8 +169,7 @@ import Swal from "sweetalert2";
     }
 
     const createUser = (values, { resetForm }) => {
-        axios.post('/api/users',values).then((response) => {
-            
+            axios.post('/api/users',values).then((response) => {
             users.value.unshift(response.data);
             $('#userFormModal').modal('hide');
             resetForm();
@@ -182,6 +189,23 @@ import Swal from "sweetalert2";
             title: "User created successfully"
             });
         });
+    }
+
+    const addUser = () => {
+        editing.value = false;
+        $('#userFormModal').modal('show');
+    }
+
+    const editUser = (user) => {
+        editing.value = true;
+        form.value.resetForm();
+        $('#userFormModal').modal('show');
+        formValues.value = {
+            id : user.id,
+            name : user.name,
+            email : user.email,
+
+        }
     }
 
     const schema = yup.object({

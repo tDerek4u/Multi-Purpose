@@ -12,6 +12,9 @@ class UsersController extends Controller
     //get users and create users
     public function index_create(Request $request){
         if($request->isMethod('post')){
+
+            
+
             return    User::create([
                 'name' => $request->name,
                 'email' => $request->email,
